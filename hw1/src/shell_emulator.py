@@ -1,55 +1,85 @@
-import os
 import zipfile
 import argparse
-import sys
-import shutil
+import os
 from pathlib import Path
-from re import split
-from pathlib import PurePosixPath
+from collections import defaultdict
 
 
 class VirtualFileSystem:
     def __init__(self, zip_file):
         self.zip_file = zip_file
-        self.root = Path("/root")
+        self.root = Path(".")  # Виртуальный корень
         self.current_path = self.root
         self.history = []
-        self.filesystem = self._load_vfs()
+        self.filesystemdata = {}
+        self.filesystem=[]
+        self._load_vfs()  # Загружаем виртуальную файловую систему
 
     def _load_vfs(self):
-        """Загружает виртуальную файловую систему из zip-архива"""
+        """Загружает виртуальную файловую систему из ziexitp-архива в память."""
         with zipfile.ZipFile(self.zip_file, 'r') as zip_ref:
-            zip_ref.extractall(self.root)
+            self.filesystem = defaultdict(list)
+            for file_info in zip_ref.infolist():
+                file_path = Path(file_info.filename)
+                dir_path = file_path.parent
+                self.filesystem[str(dir_path)].append(file_path.name)
+                if not file_info.is_dir():
+                    self.filesystemdata[file_info.filename] = zip_ref.read(file_info).decode('utf-8')
 
-    def refresh_vfs(self):
-        """Перезагружает виртуальную файловую систему после изменений в архиве"""
-        # Очищаем текущую директорию и заново извлекаем архив
-        shutil.rmtree(self.root)
-        self.root.mkdir(parents=True, exist_ok=True)
-        self._load_vfs()
 
     def list_files(self):
-        """Возвращает список файлов и папок в текущем каталоге"""
-        return [entry for entry in self.current_path.iterdir()]
+        current_dir = str(self.current_path)
+        if current_dir in self.filesystem:
+            return self.filesystem[current_dir]
+        else:
+            print("Директория пуста или не существует.")
+            return []
+        """Возвращает список файлов и папок в текущем каталоге."""
+
+
 
     def change_directory(self, new_dir):
-        """Изменяет текущую директорию или переходит на уровень выше"""
-
-        # Если new_dir это "..", то переходим на уровень выше
+        """Изменяет текущую директорию или переходит на уровень выше."""
         if new_dir == "..":
-            parent_dir = self.current_path.parent
-            if parent_dir.exists() and parent_dir.is_dir():
-                self.current_path = parent_dir
+            # Переход на уровень выше
+            if self.current_path != self.root:
+                self.current_path = self.current_path.parent
             else:
                 raise FileNotFoundError("Не удается перейти на уровень выше, директория не существует.")
         else:
-            # Иначе, переходим в новую директорию
-            target = self.current_path / new_dir
-            if target.exists() and target.is_dir():
-                self.current_path = target
+            # Переход в указанную директорию
+            new_path = self.current_path / new_dir
+            if str(new_path) in self.filesystem:
+                self.current_path = new_path
+                print(f"Перешли в директорию: {self.current_path}")
             else:
                 raise FileNotFoundError(f"Нет такого каталога: {new_dir}")
 
+
+    def print_tree(self, path=None, level=0):
+        """Рекурсивный вывод дерева каталогов."""
+        path = path or self.current_path
+        current_dir = str(path)
+
+        if current_dir in self.filesystem:
+            for file in self.filesystem[current_dir]:
+                print('  ' * level + file)
+
+            # Рекурсивно выводим файлы внутри подкаталогов
+            for dir_name in self.filesystem:
+                if dir_name.startswith(current_dir) and dir_name != current_dir:
+                    subdir = Path(dir_name)
+                    if subdir.parent == path:
+                        self.print_tree(subdir, level + 1)
+
+    def show_history(self):
+        """Выводит историю команд."""
+        return '\n'.join(self.history)
+
+    def change_owner(self, filename, owner):
+        """Эмулирует изменение владельца файла."""
+        # Поскольку мы не можем изменять владельцев в zip-файле, просто симулируем это
+        print(f"Владелец файла {filename} изменен на {owner}")
 
 
 class Shell:
@@ -58,7 +88,7 @@ class Shell:
         self.hostname = 'localhost'
 
     def run(self):
-        """Основной цикл эмулятора"""
+        """Основной цикл эмулятора командной оболочки"""
         while True:
             command = input(f"{self.hostname}:{self.vfs.current_path} $ ").strip()
             self.vfs.history.append(command)
@@ -70,6 +100,12 @@ class Shell:
                 self._handle_cd(command)
             elif command == "refresh":
                 self._handle_refresh()
+            elif command == "tree":
+                self._handle_tree()
+            elif command == "history":
+                self._handle_history()
+            elif command.startswith("chown"):
+                self._handle_chown(command)
             else:
                 print(f"Команда не найдена: {command}")
 
@@ -77,11 +113,10 @@ class Shell:
         """Обработчик команды ls"""
         files = self.vfs.list_files()
         for file in files:
-            print(file.name)
+             print(file)
 
     def _handle_cd(self, command):
         """Обработчик команды cd"""
-
         _, dir_name = command.split(maxsplit=1)
         try:
             self.vfs.change_directory(dir_name)
@@ -90,8 +125,25 @@ class Shell:
 
     def _handle_refresh(self):
         """Обработчик команды refresh"""
-        self.vfs.refresh_vfs()
+        self.vfs._load_vfs()  # Перезагрузить виртуальную файловую систему
         print("Виртуальная файловая система обновлена.")
+
+    def _handle_tree(self):
+        """Обработчик команды tree"""
+        self.vfs.print_tree()
+
+    def _handle_history(self):
+        """Обработчик команды history"""
+        for i, cmd in enumerate(self.vfs.history, 1):
+            print(f"{i}: {cmd}")
+
+    def _handle_chown(self, command):
+        """Обработчик команды chown"""
+        _, file_name, user = command.split(maxsplit=2)
+        try:
+            self.vfs.change_owner(file_name, user)
+        except FileNotFoundError as e:
+            print(e)
 
 
 def parse_args():
@@ -101,12 +153,14 @@ def parse_args():
     parser.add_argument('vfs_zip', help="Путь к ZIP-архиву виртуальной файловой системы")
     return parser.parse_args()
 
+
 def main():
     args = parse_args()
     vfs = VirtualFileSystem(args.vfs_zip)
     shell = Shell(vfs)
     shell.hostname = args.hostname
     shell.run()
+
 
 if __name__ == "__main__":
     main()
