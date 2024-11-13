@@ -21,6 +21,13 @@ class VirtualFileSystem:
         with zipfile.ZipFile(self.zip_file, 'r') as zip_ref:
             zip_ref.extractall(self.root)
 
+    def refresh_vfs(self):
+        """Перезагружает виртуальную файловую систему после изменений в архиве"""
+        # Очищаем текущую директорию и заново извлекаем архив
+        shutil.rmtree(self.root)
+        self.root.mkdir(parents=True, exist_ok=True)
+        self._load_vfs()
+
     def list_files(self):
         """Возвращает список файлов и папок в текущем каталоге"""
         return [entry for entry in self.current_path.iterdir()]
@@ -61,6 +68,8 @@ class Shell:
                 self._handle_ls()
             elif command.startswith("cd"):
                 self._handle_cd(command)
+            elif command == "refresh":
+                self._handle_refresh()
             else:
                 print(f"Команда не найдена: {command}")
 
@@ -78,6 +87,11 @@ class Shell:
             self.vfs.change_directory(dir_name)
         except FileNotFoundError as e:
             print(e)
+
+    def _handle_refresh(self):
+        """Обработчик команды refresh"""
+        self.vfs.refresh_vfs()
+        print("Виртуальная файловая система обновлена.")
 
 
 def parse_args():
