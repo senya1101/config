@@ -8,7 +8,7 @@ from collections import defaultdict
 class VirtualFileSystem:
     def __init__(self, zip_file):
         self.zip_file = zip_file
-        self.root = Path(".")  # Виртуальный корень
+        self.root = Path("root")  # Виртуальный корень
         self.current_path = self.root
         self.history = []
         self.filesystemdata = {}
@@ -21,8 +21,12 @@ class VirtualFileSystem:
             self.filesystem = defaultdict(list)
             for file_info in zip_ref.infolist():
                 file_path = Path(file_info.filename)
-                dir_path = file_path.parent
-                self.filesystem[str(dir_path)].append(file_path.name)
+                dir_path = Path(file_path.parent)
+                if(dir_path==Path(".")):
+                    self.filesystem[str(self.root)].append(file_path.name)
+                else:
+                    self.filesystem[str(self.root/dir_path)].append(file_path.name)
+
                 if not file_info.is_dir():
                     self.filesystemdata[file_info.filename] = zip_ref.read(file_info).decode('utf-8')
 
@@ -45,7 +49,7 @@ class VirtualFileSystem:
             if self.current_path != self.root:
                 self.current_path = self.current_path.parent
             else:
-                raise FileNotFoundError("Не удается перейти на уровень выше, директория не существует.")
+                print("Нет такого каталога")
         else:
             # Переход в указанную директорию
             new_path = self.current_path / new_dir
@@ -53,7 +57,7 @@ class VirtualFileSystem:
                 self.current_path = new_path
                 print(f"Перешли в директорию: {self.current_path}")
             else:
-                raise FileNotFoundError(f"Нет такого каталога: {new_dir}")
+                print("Нет такого каталога")
 
 
     def print_tree(self, path=None, level=0):
@@ -63,14 +67,17 @@ class VirtualFileSystem:
 
         if current_dir in self.filesystem:
             for file in self.filesystem[current_dir]:
-                print('  ' * level + file)
-
+                print(' ' * level + file)
             # Рекурсивно выводим файлы внутри подкаталогов
             for dir_name in self.filesystem:
                 if dir_name.startswith(current_dir) and dir_name != current_dir:
                     subdir = Path(dir_name)
                     if subdir.parent == path:
-                        self.print_tree(subdir, level + 1)
+                        print(' ' * (level + 4) + subdir.name + "/")
+                        self.print_tree(subdir, level + 4)
+        else:
+            print(' ' * level + "Директория пуста или не существует.")
+
 
     def show_history(self):
         """Выводит историю команд."""
@@ -82,7 +89,7 @@ class VirtualFileSystem:
         print(f"Владелец файла {filename} изменен на {owner}")
 
 
-class Shell:
+class ShellEmulator:
     def __init__(self, vfs):
         self.vfs = vfs
         self.hostname = 'localhost'
@@ -93,7 +100,7 @@ class Shell:
             command = input(f"{self.hostname}:{self.vfs.current_path} $ ").strip()
             self.vfs.history.append(command)
             if command == "exit":
-                break
+                raise SystemExit
             elif command.startswith("ls"):
                 self._handle_ls()
             elif command.startswith("cd"):
@@ -157,7 +164,7 @@ def parse_args():
 def main():
     args = parse_args()
     vfs = VirtualFileSystem(args.vfs_zip)
-    shell = Shell(vfs)
+    shell = ShellEmulator(vfs)
     shell.hostname = args.hostname
     shell.run()
 
