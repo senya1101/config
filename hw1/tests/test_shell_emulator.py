@@ -91,6 +91,25 @@ class TestShellEmulator(unittest.TestCase):
         with self.assertRaises(SystemExit):  # Проверка выхода
             self.shell.run()  # Запуск оболочки
 
+    @patch('builtins.input', side_effect=["cd dir1", "tree", "exit"])
+    @patch('builtins.print')
+    def test_tree_command(self, mock_print, mock_input):
+        with self.assertRaises(SystemExit):  # Проверка выхода
+            self.shell.run()  # Запуск оболочки
+
+        expected_tree = [
+            'dir2',
+            '    file3.txt',
+            '/dir2',
+            'file4.txt'
+        ]
+        f=0
+        for tmp in expected_tree:
+            if f==1:
+                mock_print.assert_any_call(tmp)
+            if tmp == "tree":
+                f=1
+
 
 if __name__ == '__main__':
     unittest.main()

@@ -16,7 +16,7 @@ class VirtualFileSystem:
         self._load_vfs()  # Загружаем виртуальную файловую систему
 
     def _load_vfs(self):
-        """Загружает виртуальную файловую систему из ziexitp-архива в память."""
+        """Загружает виртуальную файловую систему из zip-архива в память."""
         with zipfile.ZipFile(self.zip_file, 'r') as zip_ref:
             self.filesystem = defaultdict(list)
             for file_info in zip_ref.infolist():
@@ -62,7 +62,13 @@ class VirtualFileSystem:
 
     def print_tree(self, path=None, level=0):
         """Рекурсивный вывод дерева каталогов."""
-        path = path or self.current_path
+        if path == None:
+            path = self.current_path
+        else:
+            for file in self.filesystem:
+                if file.endswith(str(path)):
+                    path = Path(file)
+
         current_dir = str(path)
 
         if current_dir in self.filesystem:
@@ -75,8 +81,7 @@ class VirtualFileSystem:
                     if subdir.parent == path:
                         print(' ' * (level + 4) + subdir.name + "/")
                         self.print_tree(subdir, level + 4)
-        else:
-            print(' ' * level + "Директория пуста или не существует.")
+
 
 
     def show_history(self):
@@ -107,8 +112,8 @@ class ShellEmulator:
                 self._handle_cd(command)
             elif command == "refresh":
                 self._handle_refresh()
-            elif command == "tree":
-                self._handle_tree()
+            elif command.startswith("tree"):
+                self._handle_tree(command)
             elif command == "history":
                 self._handle_history()
             elif command.startswith("chown"):
@@ -130,14 +135,15 @@ class ShellEmulator:
         except FileNotFoundError as e:
             print(e)
 
-    def _handle_refresh(self):
-        """Обработчик команды refresh"""
-        self.vfs._load_vfs()  # Перезагрузить виртуальную файловую систему
-        print("Виртуальная файловая система обновлена.")
 
-    def _handle_tree(self):
+
+    def _handle_tree(self, command=None):
         """Обработчик команды tree"""
-        self.vfs.print_tree()
+        if command=="tree":
+            self.vfs.print_tree()
+        else:
+            _, path = command.split(maxsplit=1)
+            self.vfs.print_tree(path)
 
     def _handle_history(self):
         """Обработчик команды history"""
