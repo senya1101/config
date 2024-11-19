@@ -88,6 +88,7 @@ hw1/
             # Переход на уровень выше
             if self.current_path != self.root:
                 self.current_path = self.current_path.parent
+                print(f"Перешли в директорию: {self.current_path}")
             else:
                 print("Нет такого каталога")
         else:
@@ -112,23 +113,14 @@ hw1/
         """Рекурсивный вывод дерева каталогов."""
         if path == None:
             path = self.current_path
-        else:
-            for file in self.filesystem:
-                if file.endswith(str(path)):
-                    path = Path(file)
 
         current_dir = str(path)
 
         if current_dir in self.filesystem:
             for file in self.filesystem[current_dir]:
                 print(' ' * level + file)
-            # Рекурсивно выводим файлы внутри подкаталогов
-            for dir_name in self.filesystem:
-                if dir_name.startswith(current_dir) and dir_name != current_dir:
-                    subdir = Path(dir_name)
-                    if subdir.parent == path:
-                        print(' ' * (level + 4) + subdir.name + "/")
-                        self.print_tree(subdir, level + 4)
+
+                self.print_tree(Path(current_dir)/Path(file), level + 4)
 ```
 
 - **Описание**: Команда tree рекурсивно обходит все вложенные директории и файлы для выбранной директории.
@@ -151,7 +143,14 @@ hw1/
     def change_owner(self, filename, owner):
         """Эмулирует изменение владельца файла."""
         # Поскольку мы не можем изменять владельцев в zip-файле, просто симулируем это
-        print(f"Владелец файла {filename} изменен на {owner}")
+        dir = self.current_path / Path(path)
+        filename = str(dir.parts[-1])
+        dirr = str('\\'.join(dir.parts[:-1]))
+        if str(dir) in self.filesystem or filename in self.filesystem[dirr]:
+            self.print_tree(self.current_path / Path(path))
+            print(f"Владелец {path} изменен на {owner}")
+        else:
+            print("Нет такого каталога/файла")
 ```
 
 - **Описание**: Эмулирует изменение владельца файла..
@@ -297,7 +296,7 @@ pip install -r requirements.txt
 python "src/shell_emulator.py"  "username"  "config/virt_fs.zip"
 ```
 ## 4. Пример использования:
-![example](img/conf.png)
+
 
 ## 5. Результаты прогона тестов:
-![tests](img/tests.png)
+
