@@ -168,5 +168,12 @@ python 'src/dependency_visualizer.py'
 ---
 
 ## 4. Пример использования в виде скриншотов
+### Удачное завершение
+![example_of_use](https://github.com/senya1101/config/blob/images/hw2/img/2024-11-20%2000_44_45-config%20%E2%80%93%20dependency_visualizer.py.png?raw=true )
+### Граф зависимостей этого репозитория
+![example_of_use](https://github.com/senya1101/config/blob/images/hw2/img/output1.png?raw=true )
+### Пример графа зависимостей другого репозитория(с merge-коммитами)
+![example_of_use](https://github.com/senya1101/config/blob/images/hw2/img/output1.png?raw=true )
 
 ## 5. Результаты прогона тестов
+![test](https://github.com/senya1101/config/blob/images/hw2/img/2024-11-20%2000_17_52-config%20%E2%80%93%20dependency_visualizer.py.png?raw=true )
