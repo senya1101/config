@@ -2,5 +2,5 @@
 <config>
     <visualizer_path>../node_modules/mermaid-cli/bin/mermaid.js</visualizer_path>
     <repo_path>.</repo_path>
-    <output_path>config/output.png</output_path>
+    <output_path>result/output.png</output_path>
 </config>

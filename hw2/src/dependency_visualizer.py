@@ -1,6 +1,8 @@
 import subprocess
 import os
 import xml.etree.ElementTree as ET
+from langchain_core.runnables.graph_mermaid import draw_mermaid_png
+from python_mermaid.diagram import MermaidDiagram, Node, Link
 from pathlib import Path
 
 
@@ -16,7 +18,7 @@ def read_config(config_path):
 
 def get_commit_dependencies(repo_path):
     # Получаем все коммиты с их родительскими коммитами
-    command = ["git", "log", "--oneline", "--parents", "--reverse", "--no-merges"]
+    command = 'git log --pretty=format:"%h %p" --reverse'
     result = subprocess.run(command, cwd=repo_path, capture_output=True, text=True)
 
     commits = {}
@@ -24,30 +26,30 @@ def get_commit_dependencies(repo_path):
     for line in result.stdout.splitlines():
         parts = line.split()
         commit_id = parts[0]
-        if parts[1]=="Initial":
-            commits[commit_id]=""# " ".join(str(commit_name) for commit_name in parts[1:])
+        if len(parts)!=1:
+            parents = parts[1:]
+            commits[commit_id] = parents
         else:
-            parent = parts[1]  #Родительский коммит(только один родитель тк слияния исключены)
-            commits[commit_id] = parent# +" " + " ".join(str(commit_name) for commit_name in parts[2:])
-
+            commits[commit_id]=[]
+    print(commits)
     return commits
 
 
-def generate_mermaid_graph(commit_dependencies):
-    mermaid_code = "graph TD\n"
+def generate_mermaid_code(commit_dependencies):
+    links: list[Link]=[]
+    nodes: list[Node]=[]
+    for commit, parents in commit_dependencies.items():
+        nodes.append(Node(commit))
+        if len(parents)!=0:
+            for parent in parents:
+                links.append(Link(Node(parent), Node(commit)))
 
-    for commit, parent in commit_dependencies.items():
-            mermaid_code += f"  {parent} --> {commit}\n"
-    return mermaid_code
+    mermaid_code = MermaidDiagram(title="Dependencies graph", nodes=nodes, links=links)
+    return str(mermaid_code)
 
 
 def generate_graph_with_mermaid(mermaid_code, mermaid_path, output_path):
-    # Создаем временный файл для хранения кода Mermaid
-    with open("graph.mmd", "w") as f:
-        f.write(mermaid_code)
-    # Запускаем mermaid-cli для генерации PNG
-    command = ['npx', mermaid_path, "graph.mmd", "-o", os.path.dirname(output_path), "-t", "png"]
-    subprocess.run(command)
+    draw_mermaid_png(mermaid_syntax=mermaid_code, output_file_path=output_path)
 
 
 
@@ -59,13 +61,11 @@ def main(config_path):
     commit_dependencies = get_commit_dependencies(config["repo_path"])
 
     # Генерируем граф Mermaid
-    mermaid_code = generate_mermaid_graph(commit_dependencies)
+    mermaid_code = generate_mermaid_code(commit_dependencies)
     output_path = Path(config["output_path"])
     # Генерируем изображение
     generate_graph_with_mermaid(mermaid_code, config["mermaid_path"], output_path)
 
-    # Удаляем временный файл
-    os.remove("graph.mmd")
 
     print(f"Граф зависимостей успешно сгенерирован и сохранен в {config['output_path']}")
 
