@@ -16,7 +16,9 @@ class TestShellEmulator(unittest.TestCase):
         with zipfile.ZipFile(cls.zip_name, 'w') as zipf:
             zipf.writestr('file1.txt', 'content of file1')
             zipf.writestr('file2.txt', 'content of file2')
+            zipf.writestr('dir1', '')
             zipf.writestr('dir1/file3.txt', 'content of file3')
+            zipf.writestr('dir1/dir2', '')
             zipf.writestr('dir1/dir2/file4.txt', 'content of file4')
 
         cls.vfs = VirtualFileSystem(cls.zip_name)
@@ -28,7 +30,7 @@ class TestShellEmulator(unittest.TestCase):
         os.remove(cls.zip_name)  # Удаляем временный ZIP-файл
 
 
-    @patch('builtins.input', side_effect=["ls", "cd dir1", "ls", "cd ..", "chown file1.txt user", "exit"])
+    @patch('builtins.input', side_effect=["ls" , "chown file1.txt user", "cd dir1",  "cd ..",  "exit"])
     @patch('builtins.print')
     def test_command_execution(self, mock_print, mock_input):
         with self.assertRaises(SystemExit):  # Проверка выхода
@@ -37,11 +39,15 @@ class TestShellEmulator(unittest.TestCase):
         # Проверяем вывод ls команды
         mock_print.assert_any_call("file1.txt")
         mock_print.assert_any_call("file2.txt")
-
+        mock_print.assert_any_call("dir1")
 
 
         # Проверка сообщения об изменении владельца
-        mock_print.assert_any_call("Владелец файла file1.txt изменен на user")
+        mock_print.assert_any_call("Владелец file1.txt изменен на user")
+
+        mock_print.assert_any_call('Перешли в директорию: root\\dir1')
+
+        mock_print.assert_any_call('Перешли в директорию: root')
 
 
     @patch('builtins.input', side_effect=["cd non_existing_dir", "exit"])
@@ -53,6 +59,14 @@ class TestShellEmulator(unittest.TestCase):
         # Убедитесь, что выводится сообщение об ошибке
         mock_print.assert_called_with("Нет такого каталога")
 
+    @patch('builtins.input', side_effect=["cd ..", "exit"])
+    @patch('builtins.print')
+    def test_cd_invalid_directory1(self, mock_print, mock_input):
+        with self.assertRaises(SystemExit):  # Проверка выхода
+            self.shell.run()
+
+        # Убедитесь, что выводится сообщение об ошибке
+        mock_print.assert_called_with("Нет такого каталога")
 
     @patch('builtins.input', side_effect=["cd ..", "exit"])
     def test_cd_to_parent_directory(self, mock_input):
@@ -71,19 +85,16 @@ class TestShellEmulator(unittest.TestCase):
         with self.assertRaises(SystemExit):  # Проверка выхода
             self.shell.run()  # Запуск оболочки
 
+        a=self.vfs.history
+
         expected_history = [
-            "1: ls",
-            "2: tree",
-            "3: history",
+            "ls",
+            "tree",
+            "history",
+            'exit'
         ]
 
-        # Проверка, что history выводится корректно
-        f=0
-        for command in expected_history:
-            if f==1:
-                mock_print.assert_any_call(command)
-            if command=="history":
-                f=1
+        self.assertEqual(a, expected_history)
 
 
     @patch('builtins.input', side_effect=["exit"])
@@ -98,17 +109,14 @@ class TestShellEmulator(unittest.TestCase):
             self.shell.run()  # Запуск оболочки
 
         expected_tree = [
+            'file3.txt',
             'dir2',
-            '    file3.txt',
-            '/dir2',
-            'file4.txt'
+            '    file4.txt'
         ]
-        f=0
+        mock_print.assert_any_call('Перешли в директорию: root\\dir1')
         for tmp in expected_tree:
-            if f==1:
-                mock_print.assert_any_call(tmp)
-            if tmp == "tree":
-                f=1
+            mock_print.assert_any_call(tmp)
+
 
 
 if __name__ == '__main__':

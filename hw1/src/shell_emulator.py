@@ -48,6 +48,7 @@ class VirtualFileSystem:
             # Переход на уровень выше
             if self.current_path != self.root:
                 self.current_path = self.current_path.parent
+                print(f"Перешли в директорию: {self.current_path}")
             else:
                 print("Нет такого каталога")
         else:
@@ -97,6 +98,8 @@ class VirtualFileSystem:
         if str(dir) in self.filesystem or filename in self.filesystem[dirr]:
             self.print_tree(self.current_path / Path(path))
             print(f"Владелец {path} изменен на {owner}")
+        else:
+            print("Нет такого каталога/файла")
 
 
 
@@ -107,6 +110,7 @@ class ShellEmulator:
 
     def run(self):
         """Основной цикл эмулятора командной оболочки"""
+        self.vfs.history=[]
         while True:
             command = input(f"{self.hostname}:{self.vfs.current_path} $ ").strip()
             self.vfs.history.append(command)
