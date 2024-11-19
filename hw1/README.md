@@ -284,19 +284,14 @@ git clone https://github.com/senya1101/config
 cd config
 ```
 
-### Установка зависимостей:
-
-```bash
-cd hw1
-pip install -r requirements.txt
-```
 
 ### Запуск эмулятора:
 ```bash
 python "src/shell_emulator.py"  "username"  "config/virt_fs.zip"
 ```
 ## 4. Пример использования:
-
+![example_of_use](https://github.com/senya1101/config/blob/images/hw1/img/example_of_use.png?raw=true )
 
 ## 5. Результаты прогона тестов:
 
+![tests](https://github.com/senya1101/config/blob/images/hw1/img/tests.png?raw=true )
