@@ -64,23 +64,23 @@ class VirtualFileSystem:
         """Рекурсивный вывод дерева каталогов."""
         if path == None:
             path = self.current_path
-        else:
-            for file in self.filesystem:
-                if file.endswith(str(path)):
-                    path = Path(file)
 
         current_dir = str(path)
 
         if current_dir in self.filesystem:
             for file in self.filesystem[current_dir]:
                 print(' ' * level + file)
-            # Рекурсивно выводим файлы внутри подкаталогов
-            for dir_name in self.filesystem:
-                if dir_name.startswith(current_dir) and dir_name != current_dir:
-                    subdir = Path(dir_name)
-                    if subdir.parent == path:
-                        print(' ' * (level + 4) + subdir.name + "/")
-                        self.print_tree(subdir, level + 4)
+
+                self.print_tree(Path(current_dir)/Path(file), level + 4)
+
+    def make_tree(self, path=None, level=0):
+        dir = self.current_path/Path(path)
+
+        if str(dir) in self.filesystem:
+            self.print_tree(self.current_path/Path(path))
+        else:
+            print('Директория не найдена')
+
 
 
 
@@ -88,10 +88,16 @@ class VirtualFileSystem:
         """Выводит историю команд."""
         return '\n'.join(self.history)
 
-    def change_owner(self, filename, owner):
+    def change_owner(self, path, owner):
         """Эмулирует изменение владельца файла."""
         # Поскольку мы не можем изменять владельцев в zip-файле, просто симулируем это
-        print(f"Владелец файла {filename} изменен на {owner}")
+        dir = self.current_path / Path(path)
+        filename = str(dir.parts[-1])
+        dirr = str('\\'.join(dir.parts[:-1]))
+        if str(dir) in self.filesystem or filename in self.filesystem[dirr]:
+            self.print_tree(self.current_path / Path(path))
+            print(f"Владелец {path} изменен на {owner}")
+
 
 
 class ShellEmulator:
@@ -110,8 +116,6 @@ class ShellEmulator:
                 self._handle_ls()
             elif command.startswith("cd"):
                 self._handle_cd(command)
-            elif command == "refresh":
-                self._handle_refresh()
             elif command.startswith("tree"):
                 self._handle_tree(command)
             elif command == "history":
@@ -143,7 +147,7 @@ class ShellEmulator:
             self.vfs.print_tree()
         else:
             _, path = command.split(maxsplit=1)
-            self.vfs.print_tree(path)
+            self.vfs.make_tree(path)
 
     def _handle_history(self):
         """Обработчик команды history"""
