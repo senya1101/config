@@ -54,8 +54,8 @@ def generate_graph_with_mermaid(mermaid_code, mermaid_path, output_path):
 
 
 
-def main(config_path):
-    config = read_config(config_path)
+def main():
+    config = read_config(Path("config/config.xml"))
 
     # Получаем зависимости
     commit_dependencies = get_commit_dependencies(config["repo_path"])
@@ -70,5 +70,5 @@ def main(config_path):
     print(f"Граф зависимостей успешно сгенерирован и сохранен в {config['output_path']}")
 
 if __name__ == "__main__":
-    main(config_path=Path("config/config.xml"))
+    main()
 
