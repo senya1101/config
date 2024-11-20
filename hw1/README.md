@@ -281,7 +281,7 @@ hw1/
 
 ```bash
 git clone https://github.com/senya1101/config
-cd config
+cd config/hw1
 ```
 
 
