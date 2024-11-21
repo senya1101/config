@@ -1,8 +1,6 @@
 import subprocess
 import os
 import xml.etree.ElementTree as ET
-from langchain_core.runnables.graph_mermaid import draw_mermaid_png
-from python_mermaid.diagram import MermaidDiagram, Node, Link
 from pathlib import Path
 
 
@@ -31,30 +29,29 @@ def get_commit_dependencies(repo_path):
             commits[commit_id] = parents
         else:
             commits[commit_id]=[]
-    print(commits)
     return commits
 
 
 def generate_mermaid_code(commit_dependencies):
-    links: list[Link]=[]
-    nodes: list[Node]=[]
+    mermaid_code = 'graph TD\n'
     for commit, parents in commit_dependencies.items():
-        nodes.append(Node(commit))
-        if len(parents)!=0:
-            for parent in parents:
-                links.append(Link(Node(parent), Node(commit)))
-
-    mermaid_code = MermaidDiagram(title="Dependencies graph", nodes=nodes, links=links)
-    return str(mermaid_code)
+        for parent in parents:
+            mermaid_code+=f"    {parent} --> {commit}\n"
+    return mermaid_code
 
 
-def generate_graph_with_mermaid(mermaid_code, mermaid_path, output_path):
-    draw_mermaid_png(mermaid_syntax=mermaid_code, output_file_path=output_path)
+def generate_graph(mermaid_code, mermaid_path, output_path):
+    with open('graph.mmd', 'w') as f:
+        f.write(mermaid_code)
 
+    os.system(f"{mermaid_path} -i graph.mmd -o {output_path}")
 
+    os.remove('graph.mmd')
 
 
 def main():
+    os.system("pip install -r requirements.txt")
+
     config = read_config(Path("config/config.xml"))
 
     # Получаем зависимости
@@ -64,8 +61,7 @@ def main():
     mermaid_code = generate_mermaid_code(commit_dependencies)
     output_path = Path(config["output_path"])
     # Генерируем изображение
-    generate_graph_with_mermaid(mermaid_code, config["mermaid_path"], output_path)
-
+    generate_graph(mermaid_code, config["mermaid_path"], output_path)
 
     print(f"Граф зависимостей успешно сгенерирован и сохранен в {config['output_path']}")
 

@@ -1,6 +1,5 @@
 import zipfile
 import argparse
-import os
 from pathlib import Path
 from collections import defaultdict
 

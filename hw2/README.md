@@ -66,7 +66,6 @@
                 commits[commit_id] = parents
             else:
                 commits[commit_id]=[]
-        print(commits)
         return commits
 ```
 - **Описание**: Выполняет комманду и получает хэш коммита и его родителей и возвращает словарь с установленными зависимостями
@@ -79,16 +78,11 @@
 #### `generate_mermaid_code(commit_dependencies)`
 ```Python
     def generate_mermaid_code(commit_dependencies):
-        links: list[Link]=[]
-        nodes: list[Node]=[]
+        mermaid_code = 'graph TD\n'
         for commit, parents in commit_dependencies.items():
-            nodes.append(Node(commit))
-            if len(parents)!=0:
-                for parent in parents:
-                    links.append(Link(Node(parent), Node(commit)))
-    
-        mermaid_code = MermaidDiagram(title="Dependencies graph", nodes=nodes, links=links)
-        return str(mermaid_code)
+            for parent in parents:
+                mermaid_code+=f"    {parent} --> {commit}\n"
+        return mermaid_code
 ```
 - **Описание**: Генерирует код необходимый для графа
 - **Параметры**:
@@ -96,25 +90,33 @@
 
 ---
 
-#### `find_node_by_name(name: str, nodes: List) -> Node`
+#### `generate_graph(mermaid_code, mermaid_path, output_path):`
 ```Python
-    def generate_graph_with_mermaid(mermaid_code, output_path):
-        draw_mermaid_png(mermaid_syntax=mermaid_code, output_file_path=output_path)
+    def generate_graph(mermaid_code, mermaid_path, output_path):
+      with open('graph.mmd', 'w') as f:
+          f.write(mermaid_code)
+  
+      os.system(f"{mermaid_path} -i graph.mmd -o {output_path}")
+  
+      os.remove('graph.mmd')
 ```
 - **Описание**: Генерирует граф и сохраняет в png по указанному пути
 - **Параметры**:
   - `mermaid_code`: Mermaid код 
   - `output_path`: Путь до изображения
+  - `mermaid_path`: Путь до программы визуализатора
 
 ---
 
 
 
-#### `get_graph_png(mermaid_str: str, output_path: str) -> None`
+#### `main():`
 ```Python
    def main():
+        os.system("pip install -r requirements.txt")
+        
         config = read_config(Path("config/config.xml"))
-    
+
         # Получаем зависимости
         commit_dependencies = get_commit_dependencies(config["repo_path"])
     
@@ -122,8 +124,7 @@
         mermaid_code = generate_mermaid_code(commit_dependencies)
         output_path = Path(config["output_path"])
         # Генерируем изображение
-        generate_graph_with_mermaid(mermaid_code, config["mermaid_path"], output_path)
-    
+        generate_graph(mermaid_code, config["mermaid_path"], output_path)
     
         print(f"Граф зависимостей успешно сгенерирован и сохранен в {config['output_path']}")
 
@@ -141,21 +142,18 @@
 ### Запуск проекта
 Сначала необходимо перейти в рабочую директорию ```hw2```.
 ```bash
-cd homework2
+cd hw2
 ```
 
 #### Установка зависимостей
-В данном проекте используются сторонние библиотеки python, поэтому перед запуском проекта
-необходимо выполнить команду
-```bash
-pip install -r requirements.txt
-```
+В данном проекте используются сторонние библиотеки python, поэтому перед выполнением основных функций происходит установка.
 
 #### Настройки для работы программы
 В файле ```./config/config.xml``` находиться файл с настройками проекта.
 В нем можно поменять:
 1. ```package_name``` - путь до локального репозитория
 2. ```graph_output_path``` - путь к файлу с расширением .png, в котором будет хранить рисунок полученного графа
+3. ```visualizer_path``` - путь до программы визуализатора
 
 
 Далее выполняем команду для запуска программы

@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <config>
-    <visualizer_path>../node_modules/mermaid-cli/bin/mermaid.js</visualizer_path>
+    <visualizer_path>C:\Users\Kseniya\AppData\Roaming\npm\mmdc.cmd</visualizer_path>
     <repo_path>.</repo_path>
     <output_path>result/output.png</output_path>
 </config>
