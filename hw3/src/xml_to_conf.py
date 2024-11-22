@@ -1,3 +1,4 @@
+import os
 import xml.etree.ElementTree as ET
 import sys
 import numexpr as ne
@@ -101,6 +102,7 @@ class ConfigLanguageTranslator:
 
 
 def main():
+    os.system("pip install -r requirements.txt")
     translator = ConfigLanguageTranslator()
     xml_input = ""
     while True:
