@@ -46,7 +46,7 @@ set имя = значение
 5. sort().
 ```
 
-# Реализованный функционал
+## Реализованный функционал
 ---
 
 #### `parse_input(self, xml_input)`
@@ -195,7 +195,7 @@ set имя = значение
 
 
 ---
-# Сборка и запуск проекта
+## Сборка и запуск проекта
 1. Загрузить репозиторий на компьютер
 ```
 git clone https://github.com/senya1101/config
@@ -280,4 +280,8 @@ set currentconnections = 125
 << 19216811, 19216812, 19216813 >>
 set serverload = 135
 ```
-# Результаты тестирования
+## Пример использования в виде скриншотов
+![test](https://github.com/senya1101/config/blob/images/hw3/img/ex2.py.png?raw=true )
+![test](https://github.com/senya1101/config/blob/images/hw3/img/exam1.png?raw=true )
+## Результаты тестирования
+![test](https://github.com/senya1101/config/blob/images/hw3/img/tests3.png?raw=true )
