@@ -28,11 +28,14 @@ class ConfigLanguageTranslator:
                     if tmp[1]=='sort()':
                         r = self.constants[tmp[0]]
                         if isinstance(r, list):
-                            r.sort()
-                            if r!=None:
-                                res = r
-                            else:
-                                print("Такой массив не найден")
+                            try:
+                                r.sort()
+                                if r!=None:
+                                    res = r
+                                else:
+                                    print("Такой массив не найден")
+                            except TypeError:
+                                print(f"Значение {tmp[0]} невозможно отсортировать")
                         else:
                             print(f"Значение {tmp[0]} невозможно отсортировать")
                 else:
@@ -59,6 +62,7 @@ class ConfigLanguageTranslator:
             if name in self.constants:
                 print(f"Константа с именем {name} уже существует")
             else:
+                v=None
                 if element.text.startswith('@'):
                     v = self.evaluate_expression(element.text.strip())
                 else:
