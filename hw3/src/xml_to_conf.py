@@ -1,7 +1,7 @@
-import os
 import xml.etree.ElementTree as ET
 import sys
-import numexpr as ne
+import ast
+
 
 class ConfigLanguageTranslator:
     def __init__(self):
@@ -12,97 +12,139 @@ class ConfigLanguageTranslator:
         try:
             root = ET.fromstring(xml_input)
             for child in root:
-                self.process_elem(child, 0)
+                self.process_elem(child)
         except ET.ParseError as e:
             print(f"Ошибка парсинга XML: {e}")
             return None
 
 
-    def process_elem(self, element, f):
+    def process_elem(self, element):
         if element.tag == 'comment':
             print(f"|# {element.text.strip()} #|")
         elif element.tag == 'array':
-            res = []
-            if element.text.startswith('@'):
-                if element.attrib['name'] not in self.constants:
-                    tmp = element.text[2:-1].split()
-                    if tmp[1]=='sort()':
-                        r = self.constants[tmp[0]]
-                        if isinstance(r, list):
-                            try:
-                                r.sort()
-                                if r!=None:
-                                    res = r
-                                else:
-                                    print("Такой массив не найден")
-                            except TypeError:
-                                print(f"Значение {tmp[0]} невозможно отсортировать")
-                        else:
-                            print(f"Значение {tmp[0]} невозможно отсортировать")
-                else:
-                    print('Такое имя уже использовано')
+            if 'name' in  element.attrib and element.attrib['name'] not in self.constants:
+                res = self.process_array(element)
+                if res!=None:
+                    print(f"<< {', '.join([str(x) for x in res])} >>")
             else:
-                for child in element:
-                    if child.tag!='constant':
-                        m = self.process_elem(child, 1)
-                        if m != None:
-                            res.append(m)
-                    elif child.tag=='constant':
-                        try:
-                            value = int(child.text)
-                            res.append(value)
-                        except ValueError:
-                            print("Константа содержит недопустимые символы")
-            if len(res)!=0:
-                self.constants[element.attrib['name']] = res
-            if f!=1 and len(res)!=0:
-                print(f"<< {', '.join([str(x) for x in res])} >>")
-            return res
+                print("Массив с таким именем уже есть или имя не задано")
+
         elif element.tag == 'constant':
-            name = element.attrib.get('name')
-            if name in self.constants:
-                print(f"Константа с именем {name} уже существует")
+            if 'name' in element.attrib and element.attrib['name'] not in self.constants:
+                value = self.process_const(element)
+                if value!=None:
+                    self.constants[element.attrib['name']]=value
+                    print(f"set {element.attrib['name']} = {value}")
             else:
-                v=None
-                if element.text.startswith('@'):
-                    v = self.evaluate_expression(element.text.strip())
+                print("Константа с таким именем уже есть или имя не задано")
+
+
+
+    def process_array(self, element):
+        res = []
+        if element.text.startswith('@'):
+            if element.attrib['name'] not in self.constants:
+                tmp = element.text[2:-1].split()
+                if tmp[1] == 'sort()' and tmp[0] in self.constants:
+                    r = self.constants[tmp[0]]
+                    if isinstance(r, list):
+                        try:
+                            r.sort()
+                            if r != None:
+                                res = r
+                            else:
+                                print("Такой массив не найден")
+                                return None
+                        except TypeError:
+                            print(f"Значение {tmp[0]} невозможно отсортировать")
+                            return None
+                    else:
+                        print(f"Значение {tmp[0]} невозможно отсортировать")
+                        return None
                 else:
-                    try:
-                        v = int(element.text)
-                    except ValueError:
-                        print("Константа содержит недопустимые символы")
-                if v!=None:
-                    self.constants[name] = v
-                    print(f"set {name} = {v}")
+                    print("Такой массив не найден")
+                    return None
+            else:
+                print('Такое имя уже использовано')
+        elif element.text.replace('\n','').replace(' ','').startswith('['):
+            tmp = element.text.replace('\n','').replace(' ','')
+            elements = []
+            try:
+                elements = ast.literal_eval(tmp)
+
+            except(ValueError, SyntaxError) as e:
+                elements=None
+                print(f"Ошибка при преобразовании строки в массив: {e}")
+
+            if elements!=None:
+                res=elements
+        else:
+            for child in element:
+                if child.tag == 'constant':
+                    m = self.process_const(child)
+                    if m != None:
+                        res.append(m)
+                    else:
+                        print("Ошибка в элементе массива")
+                        return None
+                elif child.tag == 'array':
+                    m = self.process_array(child)
+                    if m != None:
+                        res.append(m)
+                    else:
+                        print("Ошибка в элементе массива")
+                        return None
+        self.constants[element.attrib['name']] = res
+        return res
+
+
+
+    def process_const(self, element):
+        v = None
+        if element.text.startswith('@'):
+            v = self.evaluate_expression(element.text.strip())
+        else:
+            try:
+                v = int(element.text)
+            except ValueError:
+                print("Константа содержит недопустимые символы")
+        return v
 
 
     def evaluate_expression(self, expression: str):
-        expression = expression[2:-1].split(maxsplit=3)
-        if len(expression)==3:
-            math_op = expression[2]
-            if math_op in '+-*/' and len(math_op)==1:
-                first_value = self.get_value(expression[0])
-                second_value = self.get_value(expression[1])
-                exp = first_value+math_op+second_value
-                try:
-                    result = ne.evaluate(exp).item()
-                    return result
-                except (SyntaxError, NameError, ZeroDivisionError, TypeError) as e:
-                    print(f"Ошибка вычисления: {e}")
+        expression = expression[2:-1].split()
+        values = []
+        result = 0
+        for i in expression:
+            if i in "+/*-":
+                if len(values)>1:
+                    try:
+                        result = eval(str(i).join(values[-2:]))
+                    except (NameError, SyntaxError, TypeError, ValueError, ZeroDivisionError) as e:
+                        print(f"Возникла ошибка: {e}")
+                        return None
+
+
+                    del values[-2:]
+                    values.append(str(result))
+            elif i.isdigit():
+                values.append(str(i))
+            elif i in self.constants:
+                values.append(str(self.constants[i]))
             else:
                 print("Ошибка в выражении")
-        else:
-            print("Ошибка в выражении")
+                return None
 
-    def get_value(self, tmp:str):
-        if tmp.isalpha() and isinstance(self.constants[tmp], int):
-            return str(self.constants[tmp])
-        else:
-            return tmp
+        if len(values)!=1 or str(result)!=values[0]:
+            print("Ошибка в выражении")
+            return None
+        return result
+
+
+
 
 
 def main():
-    os.system("pip install -r requirements.txt")
     translator = ConfigLanguageTranslator()
     xml_input = ""
     while True:

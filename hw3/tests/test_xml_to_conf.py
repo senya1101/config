@@ -38,7 +38,7 @@ class TestConfigLanguageTranslator(unittest.TestCase):
         </config>
         '''
         self.translator.parse_input(xml_input)
-        self.assertIn("Константа с именем a уже существует", self.output.getvalue())
+        self.assertIn("set a = 10\nКонстанта с таким именем уже есть или имя не задано\n", self.output.getvalue())
 
     def test_sort_array(self):
         xml_input = '''
@@ -84,29 +84,23 @@ class TestConfigLanguageTranslator(unittest.TestCase):
         </config>
         '''
         self.translator.parse_input(xml_input)
-        self.assertIn("Ошибка вычисления", self.output.getvalue())
+        self.assertIn("set x = 5\nset y = 0\nВозникла ошибка: division by zero\n", self.output.getvalue())
 
     def test_array(self):
         xml_input = '''
         <config>
             <array name="my_array">
-            <comment>
-                Разработать инструмент командной строки для учебного конфигурационного
-                языка, синтаксис которого приведен далее. 
-            </comment>
                     <array name="my_array1">
                         <constant>3</constant>
                         <constant>2</constant>
                         <constant>1</constant>
                     </array>
-                <constant>3</constant>
-                <constant>2</constant>
-                <constant>1</constant>
+                <array name='arr2'>[4, 2, 1]</array>
             </array>
         </config>
         '''
         self.translator.parse_input(xml_input)
-        self.assertIn("|# Разработать инструмент командной строки для учебного конфигурационного\n                языка, синтаксис которого приведен далее. #|\n<< [3, 2, 1], 3, 2, 1 >>", self.output.getvalue().strip())
+        self.assertIn("<< [3, 2, 1], [4, 2, 1] >>", self.output.getvalue().strip())
 
 if __name__ == "__main__":
     unittest.main()

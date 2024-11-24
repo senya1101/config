@@ -69,67 +69,30 @@ set имя = значение
 
 #### `process_elem(self, element, f)`
 ```Python
-    def process_elem(self, element, f):
+    def process_elem(self, element):
         if element.tag == 'comment':
             print(f"|# {element.text.strip()} #|")
         elif element.tag == 'array':
-            res = []
-            if element.text.startswith('@'):
-                if element.attrib['name'] not in self.constants:
-                    tmp = element.text[2:-1].split()
-                    if tmp[1]=='sort()':
-                        r = self.constants[tmp[0]]
-                        if isinstance(r, list):
-                            try:
-                                r.sort()
-                                if r!=None:
-                                    res = r
-                                else:
-                                    print("Такой массив не найден")
-                            except TypeError:
-                                print(f"Значение {tmp[0]} невозможно отсортировать")
-                        else:
-                            print(f"Значение {tmp[0]} невозможно отсортировать")
-                else:
-                    print('Такое имя уже использовано')
+            if 'name' in  element.attrib and element.attrib['name'] not in self.constants:
+                res = self.process_array(element)
+                if res!=None:
+                    print(f"<< {', '.join([str(x) for x in res])} >>")
             else:
-                for child in element:
-                    if child.tag!='constant':
-                        m = self.process_elem(child, 1)
-                        if m != None:
-                            res.append(m)
-                    elif child.tag=='constant':
-                        try:
-                            value = int(child.text)
-                            res.append(value)
-                        except ValueError:
-                            print("Константа содержит недопустимые символы")
-            if len(res)!=0:
-                self.constants[element.attrib['name']] = res
-            if f!=1 and len(res)!=0:
-                print(f"<< {', '.join([str(x) for x in res])} >>")
-            return res
+                print("Массив с таким именем уже есть или имя не задано")
+
         elif element.tag == 'constant':
-            name = element.attrib.get('name')
-            if name in self.constants:
-                print(f"Константа с именем {name} уже существует")
+            if 'name' in element.attrib and element.attrib['name'] not in self.constants:
+                value = self.process_const(element)
+                if value!=None:
+                    self.constants[element.attrib['name']]=value
+                    print(f"set {element.attrib['name']} = {value}")
             else:
-                v=None
-                if element.text.startswith('@'):
-                    v = self.evaluate_expression(element.text.strip())
-                else:
-                    try:
-                        v = int(element.text)
-                    except ValueError:
-                        print("Константа содержит недопустимые символы")
-                if v!=None:
-                    self.constants[name] = v
-                    print(f"set {name} = {v}")
+                print("Константа с таким именем уже есть или имя не задано")
 ```
-- **Описание**: Обрабатывает xml и выводит полученную информацию на учебном конфигурационном языке
+- **Описание**: Обрабатывает xml элементы
 - **Параметры**:
   - `element`: xml-элемент
-  - `f`: флаг для правильного отображения массивов
+
 
 ---
 ---
@@ -137,22 +100,33 @@ set имя = значение
 #### `evaluate_expression(self, expression: str)`
 ```Python
     def evaluate_expression(self, expression: str):
-        expression = expression[2:-1].split(maxsplit=3)
-        if len(expression)==3:
-            math_op = expression[2]
-            if math_op in '+-*/' and len(math_op)==1:
-                first_value = self.get_value(expression[0])
-                second_value = self.get_value(expression[1])
-                exp = first_value+math_op+second_value
-                try:
-                    result = ne.evaluate(exp).item()
-                    return result
-                except (SyntaxError, NameError, ZeroDivisionError, TypeError) as e:
-                    print(f"Ошибка вычисления: {e}")
+        expression = expression[2:-1].split()
+        values = []
+        result = 0
+        for i in expression:
+            if i in "+/*-":
+                if len(values)>1:
+                    try:
+                        result = eval(str(i).join(values[-2:]))
+                    except (NameError, SyntaxError, TypeError, ValueError, ZeroDivisionError) as e:
+                        print(f"Возникла ошибка: {e}")
+                        return None
+
+
+                    del values[-2:]
+                    values.append(str(result))
+            elif i.isdigit():
+                values.append(str(i))
+            elif i in self.constants:
+                values.append(str(self.constants[i]))
             else:
                 print("Ошибка в выражении")
-        else:
+                return None
+
+        if len(values)!=1 or str(result)!=values[0]:
             print("Ошибка в выражении")
+            return None
+        return result
 ```
 - **Описание**: Вычисляет значение константы
 - **Параметры**:
@@ -162,17 +136,88 @@ set имя = значение
 
 ---
 
-#### `def get_value(self, tmp:str)`
+#### `def process_const(self, element)`
 ```Python
-    def get_value(self, tmp:str):
-        if tmp.isalpha() and isinstance(self.constants[tmp], int):
-            return str(self.constants[tmp])
+    def process_const(self, element):
+        v = None
+        if element.text.startswith('@'):
+            v = self.evaluate_expression(element.text.strip())
         else:
-            return tmp
+            try:
+                v = int(element.text)
+            except ValueError:
+                print("Константа содержит недопустимые символы")
+        return v
 ```
 - **Описание**: Получает значение константы или числа
 - **Параметры**:
-  - `tmp`: Число или название константы
+  - `element`: элемент xml - константа
+
+---
+
+---
+
+#### `def get_value(self, tmp:str)`
+```Python
+        def process_array(self, element):
+        res = []
+        if element.text.startswith('@'):
+            if element.attrib['name'] not in self.constants:
+                tmp = element.text[2:-1].split()
+                if tmp[1] == 'sort()' and tmp[0] in self.constants:
+                    r = self.constants[tmp[0]]
+                    if isinstance(r, list):
+                        try:
+                            r.sort()
+                            if r != None:
+                                res = r
+                            else:
+                                print("Такой массив не найден")
+                                return None
+                        except TypeError:
+                            print(f"Значение {tmp[0]} невозможно отсортировать")
+                            return None
+                    else:
+                        print(f"Значение {tmp[0]} невозможно отсортировать")
+                        return None
+                else:
+                    print("Такой массив не найден")
+                    return None
+            else:
+                print('Такое имя уже использовано')
+        elif element.text.rstrip().startswith('['):
+            elements = []
+            try:
+                elements = ast.literal_eval(element.text.rstrip())
+
+            except(ValueError, SyntaxError) as e:
+                elements=None
+                print(f"Ошибка при преобразовании строки в массив: {e}")
+
+            if elements!=None:
+                res=elements
+        else:
+            for child in element:
+                if child.tag == 'constant':
+                    m = self.process_const(child)
+                    if m != None:
+                        res.append(m)
+                    else:
+                        print("Ошибка в элементе массива")
+                        return None
+                elif child.tag == 'array':
+                    m = self.process_array(child)
+                    if m != None:
+                        res.append(m)
+                    else:
+                        print("Ошибка в элементе массива")
+                        return None
+        self.constants[element.attrib['name']] = res
+        return res
+```
+- **Описание**: Обрабатывет массив
+- **Параметры**:
+  - `element`: xml элемент массив
 
 ---
 
@@ -257,9 +302,7 @@ set active = 0.7
     <constant name="maxconnections">150</constant>
     <constant name="timeout">30</constant>
     <array name="allowedips">
-        <constant>19216811</constant>
-        <constant>19216812</constant>
-        <constant>19216813</constant>
+        [19216811, 19216812, 19216813]
     </array>
     <constant name="currentconnections">@[maxconnections 25 -]</constant>
     <comment>Сортировка разрешенных IP</comment>
