@@ -1,10 +1,9 @@
-import struct
 import json
 import sys
 
 
-class VirtualMachine:
-    def __init__(self, memory_size=4):
+class Interpreter:
+    def __init__(self, memory_size=1024):
         self.memory = [0] * memory_size  # Эмуляция памяти
         self.accumulator = 0  # Регистр-аккумулятор
 
@@ -27,16 +26,26 @@ class VirtualMachine:
                     self.memory[address] = self.accumulator
                 case 11:#ROTATE_LEFT
                     address = byte_code & ((1 << 23) - 1)
-                    self.accumulator = ((self.accumulator << 1) | (self.memory[address] >> 15)) & 0xFFFF
+                    shift = self.memory[address]
+                    self.accumulator = ((self.accumulator << shift) & ((1 << 21)-1)) | (self.accumulator >> (21 - shift))
+                    #Сдвигаем число влево и обрезаем его до нужного количества бит, используя маску (1 << bits) - 1.
+                    # Эта маска устанавливает все биты в 1 до bits.
+                    #Комбинируем сдвинутое число с правым сдвигом исходного числа, который возвращает старшие биты в младшие позиции.
                 case _:
                     raise ValueError("В бинарном файле содержатся невалидные данные: неверный байт-код")
             byte_code >>= 28
 
-        # Сохранение результата в выходной файл
-        result_memory = self.memory[memory_range[0]:memory_range[1]]
-        with open(output_file, 'w') as f:
-            json.dump(result_memory, f)
 
+
+        # Записываем результаты в json
+        result = {
+            "memory_range": self.memory[memory_range[0]:memory_range[1]],
+            "accumulator": self.accumulator
+        }
+
+        # Сохранение результата в выходной файл
+        with open(output_file, 'w') as f:
+            json.dump(result, f, indent=4)
 
 
 
@@ -45,5 +54,5 @@ if __name__ == "__main__":
     binary_file = sys.argv[1]  # Путь к бинарному файлу
     output_file = sys.argv[2]  # Путь к выходному файлу
     memory_range = [int(sys.argv[3]), int(sys.argv[4])]  # Диапазон памяти для результата
-    vm = VirtualMachine()
+    vm = Interpreter()
     vm.execute(binary_file, output_file, memory_range)
