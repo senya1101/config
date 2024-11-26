@@ -39,7 +39,7 @@ class TestAssembler(unittest.TestCase):
         with open(self.log_file, 'r') as f:
             log_data = json.load(f)
 
-        expected_log = [{"command": "LOAD_CONST 9 282", "binary": expected_bytes.hex()}]
+        expected_log = [{"command": "LOAD_CONST 9 282", "binary": str(expected_bytes)}]
         self.assertEqual(log_data, expected_log)
 
     def test_write_command(self):

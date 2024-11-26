@@ -323,4 +323,4 @@ WRITE 4 7
 ```
 
 ## Результаты тестирования
-![image](https://github.com/user-attachments/assets/12f47803-d419-4a91-bfa9-e5fdb387e9c1)
+![image](https://github.com/senya1101/config/blob/images/hw4/imgs/test.png?Raw=true)
