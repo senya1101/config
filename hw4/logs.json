@@ -1,0 +1,22 @@
+[
+    {
+        "command": "LOAD_CONST 9 1",
+        "binary": "19000000"
+    },
+    {
+        "command": "WRITE 4 0",
+        "binary": "04000000"
+    },
+    {
+        "command": "LOAD_CONST 9 5",
+        "binary": "59000000"
+    },
+    {
+        "command": "ROTATE_LEFT 11 0",
+        "binary": "0b000000"
+    },
+    {
+        "command": "WRITE 4 0",
+        "binary": "04000000"
+    }
+]
