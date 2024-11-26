@@ -1,15 +1,15 @@
 [
     {
-        "command": "LOAD_CONST 9 3",
-        "binary": "39000000"
+        "command": "LOAD_CONST 9 20",
+        "binary": "49010000"
     },
     {
         "command": "WRITE 4 0",
         "binary": "04000000"
     },
     {
-        "command": "LOAD_CONST 9 2",
-        "binary": "29000000"
+        "command": "LOAD_CONST 9 3",
+        "binary": "39000000"
     },
     {
         "command": "ROTATE_LEFT 11 0",
@@ -18,5 +18,145 @@
     {
         "command": "WRITE 4 0",
         "binary": "04000000"
+    },
+    {
+        "command": ";",
+        "binary": "49010000"
+    },
+    {
+        "command": "LOAD_CONST 9 20",
+        "binary": "14000000"
+    },
+    {
+        "command": "WRITE 4 1",
+        "binary": "29000000"
+    },
+    {
+        "command": "LOAD_CONST 9 2",
+        "binary": "1b000000"
+    },
+    {
+        "command": "ROTATE_LEFT 11 1",
+        "binary": "14000000"
+    },
+    {
+        "command": "WRITE 4 1",
+        "binary": "29000000"
+    },
+    {
+        "command": ";",
+        "binary": "24000000"
+    },
+    {
+        "command": "LOAD_CONST 9 2",
+        "binary": "29000000"
+    },
+    {
+        "command": "WRITE 4 2",
+        "binary": "2b000000"
+    },
+    {
+        "command": "LOAD_CONST 9 2",
+        "binary": "24000000"
+    },
+    {
+        "command": "ROTATE_LEFT 11 2",
+        "binary": "39000000"
+    },
+    {
+        "command": "WRITE 4 2",
+        "binary": "34000000"
+    },
+    {
+        "command": ";",
+        "binary": "39000000"
+    },
+    {
+        "command": "LOAD_CONST 9 3",
+        "binary": "3b000000"
+    },
+    {
+        "command": "WRITE 4 3",
+        "binary": "34000000"
+    },
+    {
+        "command": "LOAD_CONST 9 3",
+        "binary": "49000000"
+    },
+    {
+        "command": "ROTATE_LEFT 11 3",
+        "binary": "44000000"
+    },
+    {
+        "command": "WRITE 4 3",
+        "binary": "49000000"
+    },
+    {
+        "command": ";",
+        "binary": "4b000000"
+    },
+    {
+        "command": "LOAD_CONST 9 4",
+        "binary": "44000000"
+    },
+    {
+        "command": "WRITE 4 4",
+        "binary": "59000000"
+    },
+    {
+        "command": "LOAD_CONST 9 4",
+        "binary": "54000000"
+    },
+    {
+        "command": "ROTATE_LEFT 11 4",
+        "binary": "59000000"
+    },
+    {
+        "command": "WRITE 4 4",
+        "binary": "5b000000"
+    },
+    {
+        "command": ";",
+        "binary": "54000000"
+    },
+    {
+        "command": "LOAD_CONST 9 5",
+        "binary": "69000000"
+    },
+    {
+        "command": "WRITE 4 5",
+        "binary": "64000000"
+    },
+    {
+        "command": "LOAD_CONST 9 5",
+        "binary": "69000000"
+    },
+    {
+        "command": "ROTATE_LEFT 11 5",
+        "binary": "6b000000"
+    },
+    {
+        "command": "WRITE 4 5",
+        "binary": "64000000"
+    },
+    {
+        "command": ";",
+        "binary": "79000000"
+    },
+    {
+        "command": "LOAD_CONST 9 6",
+        "binary": "74000000"
+    },
+    {
+        "command": "WRITE 4 6",
+        "binary": "79000000"
+    },
+    {
+        "command": "LOAD_CONST 9 6",
+        "binary": "7b000000"
+    },
+    {
+        "command": "ROTATE_LEFT 11 6",
+        "binary": "74000000"
     }
 ]
