@@ -1,162 +1,162 @@
 [
     {
         "command": "LOAD_CONST 9 20",
-        "binary": "49010000"
+        "binary": "b'I\\x01\\x00\\x00'"
     },
     {
         "command": "WRITE 4 0",
-        "binary": "04000000"
+        "binary": "b'\\x04\\x00\\x00\\x00'"
     },
     {
         "command": "LOAD_CONST 9 3",
-        "binary": "39000000"
+        "binary": "b'9\\x00\\x00\\x00'"
     },
     {
         "command": "ROTATE_LEFT 11 0",
-        "binary": "0b000000"
+        "binary": "b'\\x0b\\x00\\x00\\x00'"
     },
     {
         "command": "WRITE 4 0",
-        "binary": "04000000"
-    },
-    {
-        "command": ";",
-        "binary": "49010000"
+        "binary": "b'\\x04\\x00\\x00\\x00'"
     },
     {
         "command": "LOAD_CONST 9 20",
-        "binary": "14000000"
+        "binary": "b'I\\x01\\x00\\x00'"
     },
     {
         "command": "WRITE 4 1",
-        "binary": "29000000"
+        "binary": "b'\\x14\\x00\\x00\\x00'"
     },
     {
         "command": "LOAD_CONST 9 2",
-        "binary": "1b000000"
+        "binary": "b')\\x00\\x00\\x00'"
     },
     {
         "command": "ROTATE_LEFT 11 1",
-        "binary": "14000000"
+        "binary": "b'\\x1b\\x00\\x00\\x00'"
     },
     {
         "command": "WRITE 4 1",
-        "binary": "29000000"
-    },
-    {
-        "command": ";",
-        "binary": "24000000"
+        "binary": "b'\\x14\\x00\\x00\\x00'"
     },
     {
         "command": "LOAD_CONST 9 2",
-        "binary": "29000000"
+        "binary": "b')\\x00\\x00\\x00'"
     },
     {
         "command": "WRITE 4 2",
-        "binary": "2b000000"
+        "binary": "b'$\\x00\\x00\\x00'"
     },
     {
         "command": "LOAD_CONST 9 2",
-        "binary": "24000000"
+        "binary": "b')\\x00\\x00\\x00'"
     },
     {
         "command": "ROTATE_LEFT 11 2",
-        "binary": "39000000"
+        "binary": "b'+\\x00\\x00\\x00'"
     },
     {
         "command": "WRITE 4 2",
-        "binary": "34000000"
-    },
-    {
-        "command": ";",
-        "binary": "39000000"
+        "binary": "b'$\\x00\\x00\\x00'"
     },
     {
         "command": "LOAD_CONST 9 3",
-        "binary": "3b000000"
+        "binary": "b'9\\x00\\x00\\x00'"
     },
     {
         "command": "WRITE 4 3",
-        "binary": "34000000"
+        "binary": "b'4\\x00\\x00\\x00'"
     },
     {
         "command": "LOAD_CONST 9 3",
-        "binary": "49000000"
+        "binary": "b'9\\x00\\x00\\x00'"
     },
     {
         "command": "ROTATE_LEFT 11 3",
-        "binary": "44000000"
+        "binary": "b';\\x00\\x00\\x00'"
     },
     {
         "command": "WRITE 4 3",
-        "binary": "49000000"
-    },
-    {
-        "command": ";",
-        "binary": "4b000000"
+        "binary": "b'4\\x00\\x00\\x00'"
     },
     {
         "command": "LOAD_CONST 9 4",
-        "binary": "44000000"
+        "binary": "b'I\\x00\\x00\\x00'"
     },
     {
         "command": "WRITE 4 4",
-        "binary": "59000000"
+        "binary": "b'D\\x00\\x00\\x00'"
     },
     {
         "command": "LOAD_CONST 9 4",
-        "binary": "54000000"
+        "binary": "b'I\\x00\\x00\\x00'"
     },
     {
         "command": "ROTATE_LEFT 11 4",
-        "binary": "59000000"
+        "binary": "b'K\\x00\\x00\\x00'"
     },
     {
         "command": "WRITE 4 4",
-        "binary": "5b000000"
-    },
-    {
-        "command": ";",
-        "binary": "54000000"
+        "binary": "b'D\\x00\\x00\\x00'"
     },
     {
         "command": "LOAD_CONST 9 5",
-        "binary": "69000000"
+        "binary": "b'Y\\x00\\x00\\x00'"
     },
     {
         "command": "WRITE 4 5",
-        "binary": "64000000"
+        "binary": "b'T\\x00\\x00\\x00'"
     },
     {
         "command": "LOAD_CONST 9 5",
-        "binary": "69000000"
+        "binary": "b'Y\\x00\\x00\\x00'"
     },
     {
         "command": "ROTATE_LEFT 11 5",
-        "binary": "6b000000"
+        "binary": "b'[\\x00\\x00\\x00'"
     },
     {
         "command": "WRITE 4 5",
-        "binary": "64000000"
-    },
-    {
-        "command": ";",
-        "binary": "79000000"
+        "binary": "b'T\\x00\\x00\\x00'"
     },
     {
         "command": "LOAD_CONST 9 6",
-        "binary": "74000000"
+        "binary": "b'i\\x00\\x00\\x00'"
     },
     {
         "command": "WRITE 4 6",
-        "binary": "79000000"
+        "binary": "b'd\\x00\\x00\\x00'"
     },
     {
         "command": "LOAD_CONST 9 6",
-        "binary": "7b000000"
+        "binary": "b'i\\x00\\x00\\x00'"
     },
     {
         "command": "ROTATE_LEFT 11 6",
-        "binary": "74000000"
+        "binary": "b'k\\x00\\x00\\x00'"
+    },
+    {
+        "command": "WRITE 4 6",
+        "binary": "b'd\\x00\\x00\\x00'"
+    },
+    {
+        "command": "LOAD_CONST 9 7",
+        "binary": "b'y\\x00\\x00\\x00'"
+    },
+    {
+        "command": "WRITE 4 7",
+        "binary": "b't\\x00\\x00\\x00'"
+    },
+    {
+        "command": "LOAD_CONST 9 7",
+        "binary": "b'y\\x00\\x00\\x00'"
+    },
+    {
+        "command": "ROTATE_LEFT 11 7",
+        "binary": "b'{\\x00\\x00\\x00'"
+    },
+    {
+        "command": "WRITE 4 7",
+        "binary": "b't\\x00\\x00\\x00'"
     }
 ]

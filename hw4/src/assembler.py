@@ -18,12 +18,11 @@ class Assembler:
     def assemble(self, input_file, output_file, log_file):
         with open(input_file, 'r') as f:
             lines = f.readlines()
-
+        logs = []
         for line in lines:
             parts = line.strip().split()
-            if len(parts) == 0 or parts[0].startswith(';'):  # Игнорируем пустые строки и комментарии
+            if len(parts)==0 or line.startswith(';'):  # Игнорируем пустые строки и комментарии
                 continue
-
             command = parts[0]
             if command in self.instructions:
                 a = int(parts[1])# Значение A
@@ -38,7 +37,7 @@ class Assembler:
                 instruction = (b << 4) | a
 
                 instruction = instruction.to_bytes(4, byteorder='little')
-
+                logs.append({"command": line.rstrip(), "binary": str(instruction)})
                 self.binary_code.append(instruction)
             else:
                 print('Команда не найдена')
@@ -50,10 +49,8 @@ class Assembler:
                 f.write(instruction)
 
         # Запись лог-файла
-        log_data = [{"command": line.strip(), "binary": instruction.hex()} for line, instruction in
-                    zip(lines, self.binary_code)]
         with open(log_file, 'w') as log_f:
-            json.dump(log_data, log_f, indent=4)
+            json.dump(logs, log_f, indent=4)
 
 
 # Запуск ассемблера
