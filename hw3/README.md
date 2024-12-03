@@ -253,7 +253,7 @@ cd hw3
 
 3. Запустить config_converter.py
 ```
-py xml_to_conf.py 
+py src/xml_to_conf.py 
 ```
 4. Ввод конфигурации в командную строку. Для завершения ввода нажать enter
 # Примерs работы программы
